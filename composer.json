@@ -1,0 +1,37 @@
+{
+    "name": "alengo/customer-discount",
+    "description": "Plugin to set customer specific discounts",
+    "type": "shopware-platform-plugin",
+    "version": "0.2.2",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "alengo OG",
+            "homepage": "https://www.alengo.at",
+            "role": "Manufacturer"
+        }
+    ],
+    "require": {
+        "shopware/core": "^6.5.8",
+        "shopware/storefront": "^6.5.8"
+    },
+    "extra": {
+        "shopware-plugin-class": "AlengoCustomerDiscount\\AlengoCustomerDiscount",
+        "plugin-icon": "src/Resources/config/plugin.png",
+        "copyright": "(c) by alengo OG",
+        "label": {
+            "de-DE": "alengo Kundenguthaben Plugin",
+            "en-GB": "alengo Customer Discount Plugin"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "AlengoCustomerDiscount\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AlengoCustomerDiscount\\Tests\\": "tests/"
+        }
+    }
+}

@@ -1,0 +1,8 @@
+# IDEs
+/.idea
+*.iml
+*~
+.web-server-pid
+
+# System files
+.DS_Store

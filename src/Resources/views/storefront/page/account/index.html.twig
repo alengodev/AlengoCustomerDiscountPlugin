@@ -1,0 +1,23 @@
+{% sw_extends "@Storefront/storefront/page/account/index.html.twig" %}
+
+{% block page_account_overview_payment_content %}
+    {{ parent() }}
+
+    {% set expirationDateIsSet = context.customer.customFields.alengoCustomerDiscount_expirationDate !== null %}
+    {% set expirationDate = context.customer.customFields.alengoCustomerDiscount_expirationDate is null
+        ? "now"|date_modify("+1 day")
+        : context.customer.customFields.alengoCustomerDiscount_expirationDate|date_modify("+23 hours +59 minutes +59 seconds") %}
+
+    {% if context.customer.customFields.alengoCustomerDiscount_amount|default(0) > 0
+        and context.customer.customFields.alengoCustomerDiscount_name|default()
+        and "now"|date_modify("-1 second") <= expirationDate %}
+        <p>
+            <strong>{{ context.customer.customFields.alengoCustomerDiscount_name|default() }}: {{ context.customer.customFields.alengoCustomerDiscount_amount|default(0)|currency }}</strong>
+
+            {% if "now"|date_modify("-1 second") < expirationDate and expirationDateIsSet %}
+                <br>
+                Nutzbar bis {{ context.customer.customFields.alengoCustomerDiscount_expirationDate|date('d.m.Y') }}
+            {% endif %}
+        </p>
+    {% endif %}
+{% endblock %}

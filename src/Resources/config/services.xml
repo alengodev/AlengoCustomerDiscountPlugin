@@ -1,0 +1,26 @@
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!--<service id="AlengoCustomerDiscount\Subscriber\CartDiscountSubscriber">
+            <argument type="service" id="promotion.repository"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>-->
+
+        <service id="AlengoCustomerDiscount\Core\Checkout\CustomerDiscountProcessor" autowire="true" autoconfigure="true">
+            <tag name="shopware.cart.processor" priority="100"/>
+        </service>
+
+        <service id="AlengoCustomerDiscount\Service\CustomFieldsInstaller">
+            <argument type="service" id="custom_field_set.repository"/>
+            <argument type="service" id="custom_field_set_relation.repository"/>
+        </service>
+
+        <service id="AlengoCustomerDiscount\Subscriber\OrderDiscountSubscriber"
+                 autowire="true" autoconfigure="true">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+    </services>
+</container>
