@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace AlengoCustomerDiscount\Service;
 
@@ -19,8 +21,8 @@ class CustomFieldsInstaller
             'label' => [
                 'en-GB' => 'Customer discount settings',
                 'de-DE' => 'Einstellungen für Kundenrabatte',
-                Defaults::LANGUAGE_SYSTEM => 'Customer discount settings'
-            ]
+                Defaults::LANGUAGE_SYSTEM => 'Customer discount settings',
+            ],
         ],
         'customFields' => [
             [
@@ -30,10 +32,10 @@ class CustomFieldsInstaller
                     'label' => [
                         'en-GB' => 'Discount name',
                         'de-DE' => 'Rabattname',
-                        Defaults::LANGUAGE_SYSTEM => 'Discount name'
+                        Defaults::LANGUAGE_SYSTEM => 'Discount name',
                     ],
-                    'customFieldPosition' => 0
-                ]
+                    'customFieldPosition' => 0,
+                ],
             ],
             [
                 'name' => 'alengoCustomerDiscount_amount',
@@ -42,10 +44,10 @@ class CustomFieldsInstaller
                     'label' => [
                         'en-GB' => 'Discount amount',
                         'de-DE' => 'Rabattbetrag',
-                        Defaults::LANGUAGE_SYSTEM => 'Discount amount'
+                        Defaults::LANGUAGE_SYSTEM => 'Discount amount',
                     ],
-                    'customFieldPosition' => 1
-                ]
+                    'customFieldPosition' => 1,
+                ],
             ],
             [
                 'name' => 'alengoCustomerDiscount_expirationDate',
@@ -54,18 +56,18 @@ class CustomFieldsInstaller
                     'label' => [
                         'en-GB' => 'Expiration date',
                         'de-DE' => 'Ablaufdatum',
-                        Defaults::LANGUAGE_SYSTEM => 'Expiration date'
+                        Defaults::LANGUAGE_SYSTEM => 'Expiration date',
                     ],
-                    'customFieldPosition' => 2
-                ]
-            ]
-        ]
+                    'customFieldPosition' => 2,
+                ],
+            ],
+        ],
     ];
 
     public function __construct(
         private readonly EntityRepository $customFieldSetRepository,
         private readonly EntityRepository $customFieldSetRelationRepository,
-        private readonly EntityRepository $customFieldRepository
+        private readonly EntityRepository $customFieldRepository,
     ) {
     }
 
@@ -73,9 +75,9 @@ class CustomFieldsInstaller
     {
         $existingFieldSet = $this->getExistingCustomFieldSet($context);
 
-        if ($existingFieldSet === null) {
+        if (null === $existingFieldSet) {
             $this->customFieldSetRepository->upsert([
-                self::CUSTOM_FIELDSET
+                self::CUSTOM_FIELDSET,
             ], $context);
         } else {
             // Synchronize custom fields if the field set already exists
@@ -87,8 +89,8 @@ class CustomFieldsInstaller
                 $this->customFieldSetRepository->upsert([
                     [
                         'id' => $existingFieldSet['id'],
-                        'customFields' => $customFieldsToAdd
-                    ]
+                        'customFields' => $customFieldsToAdd,
+                    ],
                 ], $context);
             }
         }
@@ -105,6 +107,7 @@ class CustomFieldsInstaller
                     'entityName' => 'customer',
                 ];
             }
+
             return null;
         }, $customFieldSetIds));
 
@@ -120,13 +123,13 @@ class CustomFieldsInstaller
         if (!empty($customFieldSetIds)) {
             // Remove relations
             $this->customFieldSetRelationRepository->delete(
-                array_map(fn($id) => ['customFieldSetId' => $id], $customFieldSetIds),
+                array_map(fn ($id) => ['customFieldSetId' => $id], $customFieldSetIds),
                 $context
             );
 
             // Remove custom field sets
             $this->customFieldSetRepository->delete(
-                array_map(fn($id) => ['id' => $id], $customFieldSetIds),
+                array_map(fn ($id) => ['id' => $id], $customFieldSetIds),
                 $context
             );
         }
@@ -171,4 +174,3 @@ class CustomFieldsInstaller
         return $this->customFieldRepository->search($criteria, $context)->getTotal() > 0;
     }
 }
-

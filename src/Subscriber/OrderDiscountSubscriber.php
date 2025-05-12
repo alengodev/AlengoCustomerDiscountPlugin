@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace AlengoCustomerDiscount\Subscriber;
 
@@ -39,7 +41,7 @@ class OrderDiscountSubscriber implements EventSubscriberInterface
         // discover discounts
         $discountTotal = 0.0;
         foreach ($order->getLineItems() as $lineItem) {
-            if ($lineItem->getType() === 'special_discount' && $lineItem->getPrice()) {
+            if ('special_discount' === $lineItem->getType() && $lineItem->getPrice()) {
                 $discountTotal += abs($lineItem->getPrice()->getTotalPrice());
             }
         }

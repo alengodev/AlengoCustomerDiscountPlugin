@@ -1,14 +1,16 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace AlengoCustomerDiscount;
 
+use AlengoCustomerDiscount\Service\CustomFieldsInstaller;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
 use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
-use AlengoCustomerDiscount\Service\CustomFieldsInstaller;
 
 class AlengoCustomerDiscount extends Plugin
 {
@@ -71,4 +73,3 @@ class AlengoCustomerDiscount extends Plugin
         );
     }
 }
-

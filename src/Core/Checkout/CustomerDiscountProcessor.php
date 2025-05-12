@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace AlengoCustomerDiscount\Core\Checkout;
 
@@ -23,8 +25,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
     public function __construct(
         AbsolutePriceCalculator $absoluteCalculator,
         private readonly DeliveryProcessor $deliveryProcessor,
-    )
-    {
+    ) {
         $this->absoluteCalculator = $absoluteCalculator;
     }
 
@@ -41,7 +42,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         $products = $this->findProducts($toCalculate);
 
         // no products found => no discount
-        if ($products->count() === 0) {
+        if (0 === $products->count()) {
             return;
         }
 
@@ -60,7 +61,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         }
 
         $customer = $context->getCustomer();
-        if ($customer === null) {
+        if (null === $customer) {
             return;
         }
         $customerDiscountName = $customer->getCustomFields()['alengoCustomerDiscount_name'] ?? null;
@@ -73,7 +74,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
 
         // compare current date with expiration date
         $currentDate = new \DateTime();
-        $expirationDate = $customerDiscountExpirationDate === null ?
+        $expirationDate = null === $customerDiscountExpirationDate ?
             (new \DateTime())->modify('+1 day') :
             (new \DateTime($customerDiscountExpirationDate))->setTime(23, 59, 59);
         if ($currentDate > $expirationDate) {
@@ -82,7 +83,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
 
         // Check if the discount already exists in the cart
         $existingDiscount = $toCalculate->getLineItems()->filter(function (LineItem $item) use ($customerDiscountName) {
-            return $item->getType() === 'special_discount' && $item->getLabel() === $customerDiscountName;
+            return 'special_discount' === $item->getType() && $item->getLabel() === $customerDiscountName;
         });
 
         if ($existingDiscount->count() > 0) {
@@ -122,7 +123,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         $discountLineItem->setPrice($calculatedPrice);
 
         // Ensure the discount line item is unique and does not interfere with other items
-        $discountLineItem->setId(uniqid(uniqid($customerDiscountName . '_'), true));
+        $discountLineItem->setId(uniqid(uniqid($customerDiscountName.'_'), true));
 
         // add discount to cart
         $toCalculate->add($discountLineItem);
@@ -132,7 +133,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         CartDataCollection $data,
         Cart $original,
         SalesChannelContext $context,
-        CartBehavior $behavior
+        CartBehavior $behavior,
     ): void {
         // collection of deliveries
         $this->deliveryProcessor->collect($data, $original, $context, $behavior);
@@ -144,16 +145,16 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
     private function findProducts(Cart $cart): LineItemCollection
     {
         return $cart->getLineItems()->filter(function (LineItem $item) {
-            return $item->getType() === LineItem::PRODUCT_LINE_ITEM_TYPE;
+            return LineItem::PRODUCT_LINE_ITEM_TYPE === $item->getType();
         });
     }
 
     private function createDiscount(string $name, $expirationDate): LineItem
     {
-        $discountLineItem = new LineItem(uniqid($name . '_'), 'special_discount', null, 1);
+        $discountLineItem = new LineItem(uniqid($name.'_'), 'special_discount', null, 1);
 
         $discountLineItem->setLabel($name);
-        $discountLineItem->setDescription('Rabatt gültig bis ' . $expirationDate->format('d.m.Y'));
+        $discountLineItem->setDescription('Rabatt gültig bis '.$expirationDate->format('d.m.Y'));
         $discountLineItem->setGood(false);       // kein kaufbares Gut
         $discountLineItem->setStackable(false);  // nicht mehrfach anwendbar
         $discountLineItem->setRemovable(false);  // nicht im Frontend löschbar
@@ -161,4 +162,3 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         return $discountLineItem;
     }
 }
-
