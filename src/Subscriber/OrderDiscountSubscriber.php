@@ -1,9 +1,8 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace AlengoCustomerDiscount\Subscriber;
 
+use AlengoCustomerDiscount\AlengoCustomerDiscount;
 use Shopware\Core\Checkout\Cart\Event\CheckoutOrderPlacedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -41,7 +40,7 @@ class OrderDiscountSubscriber implements EventSubscriberInterface
         // discover discounts
         $discountTotal = 0.0;
         foreach ($order->getLineItems() as $lineItem) {
-            if ('special_discount' === $lineItem->getType() && $lineItem->getPrice()) {
+            if ($lineItem->getType() === AlengoCustomerDiscount::LINE_ITEM_TYPE && $lineItem->getPrice()) {
                 $discountTotal += abs($lineItem->getPrice()->getTotalPrice());
             }
         }

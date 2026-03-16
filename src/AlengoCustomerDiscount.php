@@ -1,19 +1,19 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace AlengoCustomerDiscount;
 
-use AlengoCustomerDiscount\Service\CustomFieldsInstaller;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
 use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Plugin\Context\UpdateContext;
+use AlengoCustomerDiscount\Service\CustomFieldsInstaller;
 
 class AlengoCustomerDiscount extends Plugin
 {
+    public const LINE_ITEM_TYPE = 'special_discount';
+
     public function install(InstallContext $installContext): void
     {
         // Do stuff such as creating a new payment method
@@ -62,14 +62,7 @@ class AlengoCustomerDiscount extends Plugin
 
     private function getCustomFieldsInstaller(): CustomFieldsInstaller
     {
-        if ($this->container->has(CustomFieldsInstaller::class)) {
-            return $this->container->get(CustomFieldsInstaller::class);
-        }
-
-        return new CustomFieldsInstaller(
-            $this->container->get('custom_field_set.repository'),
-            $this->container->get('custom_field_set_relation.repository'),
-            $this->container->get('custom_field.repository')
-        );
+        return $this->container->get(CustomFieldsInstaller::class);
     }
 }
+

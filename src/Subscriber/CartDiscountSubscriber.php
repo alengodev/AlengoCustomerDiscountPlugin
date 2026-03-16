@@ -2,14 +2,16 @@
 
 namespace AlengoCustomerDiscount\Subscriber;
 
+use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
+use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Shopware\Core\Checkout\Cart\Event\CartChangedEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Shopware\Core\Checkout\Cart\Event\CartChangedEvent;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\Checkout\Cart\SalesChannel\CartService; // Korrigierter Namespace
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CartDiscountSubscriber implements EventSubscriberInterface
 {
@@ -97,12 +99,16 @@ class CartDiscountSubscriber implements EventSubscriberInterface
                     dump('Error creating promotion:', $e->getMessage());
                 }
 
-                $this->cartService->add(
-                    $cart,
-                    [new AddPromotionCommand($customerPromotionName)],
-                    $salesChannelContext
+                $promotionLineItem = new LineItem(
+                    Uuid::fromStringToHex('promotion-' . $customerPromotionName),
+                    LineItem::PROMOTION_LINE_ITEM_TYPE,
+                    $customerPromotionName
                 );
-                // add voucher to cart using CartService
+                $promotionLineItem->setLabel('promotion-' . $customerPromotionName);
+                $promotionLineItem->setGood(false);
+                $promotionLineItem->setReferencedId($customerPromotionName);
+
+                $this->cartService->add($cart, [$promotionLineItem], $salesChannelContext);
                 $cart->setCampaignCode($customerPromotionName);
             }
         }

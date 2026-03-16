@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace AlengoCustomerDiscount\Core\Checkout;
 
@@ -9,13 +7,13 @@ use Shopware\Core\Checkout\Cart\CartBehavior;
 use Shopware\Core\Checkout\Cart\CartDataCollectorInterface;
 use Shopware\Core\Checkout\Cart\CartProcessorInterface;
 use Shopware\Core\Checkout\Cart\Delivery\DeliveryProcessor;
-use Shopware\Core\Checkout\Cart\Delivery\Struct\DeliveryCollection;
 use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\LineItem\LineItemCollection;
 use Shopware\Core\Checkout\Cart\Price\AbsolutePriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition;
 use Shopware\Core\Checkout\Cart\Price\Struct\PriceCollection;
+use AlengoCustomerDiscount\AlengoCustomerDiscount;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProcessorInterface
@@ -25,7 +23,8 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
     public function __construct(
         AbsolutePriceCalculator $absoluteCalculator,
         private readonly DeliveryProcessor $deliveryProcessor,
-    ) {
+    )
+    {
         $this->absoluteCalculator = $absoluteCalculator;
     }
 
@@ -42,26 +41,12 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         $products = $this->findProducts($toCalculate);
 
         // no products found => no discount
-        if (0 === $products->count()) {
+        if ($products->count() === 0) {
             return;
         }
 
-        // get delivery from CartDataCollection ($data)
-        /** @var DeliveryCollection $deliveries */
-        $deliveries = $data->get('deliveries');
-        $shippingCosts = 0;
-        if ($deliveries instanceof DeliveryCollection) {
-            $calculatedShipping = $deliveries->getShippingCosts()->first();
-            $shippingCosts = $calculatedShipping?->getTotalPrice() ?? 0;
-            $shippingTax = $calculatedShipping?->getCalculatedTaxes()->first() ?? 0;
-
-            if ($shippingTax) {
-                $shippingCosts += $shippingTax->getTax();
-            }
-        }
-
         $customer = $context->getCustomer();
-        if (null === $customer) {
+        if ($customer === null) {
             return;
         }
         $customerDiscountName = $customer->getCustomFields()['alengoCustomerDiscount_name'] ?? null;
@@ -74,7 +59,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
 
         // compare current date with expiration date
         $currentDate = new \DateTime();
-        $expirationDate = null === $customerDiscountExpirationDate ?
+        $expirationDate = $customerDiscountExpirationDate === null ?
             (new \DateTime())->modify('+1 day') :
             (new \DateTime($customerDiscountExpirationDate))->setTime(23, 59, 59);
         if ($currentDate > $expirationDate) {
@@ -83,28 +68,21 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
 
         // Check if the discount already exists in the cart
         $existingDiscount = $toCalculate->getLineItems()->filter(function (LineItem $item) use ($customerDiscountName) {
-            return 'special_discount' === $item->getType() && $item->getLabel() === $customerDiscountName;
+            return $item->getType() === AlengoCustomerDiscount::LINE_ITEM_TYPE && $item->getLabel() === $customerDiscountName;
         });
 
         if ($existingDiscount->count() > 0) {
             return; // Discount already applied, no need to add it again
         }
 
-        // Get the total cart value including tax + shipping costs
-        $cartTotal = $toCalculate->getPrice()->getTotalPrice() + $shippingCosts;
-
-        // Get the net cart value (without tax)
-        $cartNetTotal = $toCalculate->getPrice()->getNetPrice();
-        // get tax status & tax rate
-        $taxStatus = $context->getTaxState();
-        $taxRate = $toCalculate->getPrice()->getCalculatedTaxes()->first()->getTaxRate();
-        $taxAmount = $toCalculate->getPrice()->getCalculatedTaxes()->first()->getTax();
+        // Get the total cart value
+        $cartTotal = $toCalculate->getPrice()->getTotalPrice();
 
         // Adjust the discount amount if it exceeds the cart total
         $adjustedDiscountAmount = min((float) $customerDiscountAmount, (float) $cartTotal);
 
         // set discount amount
-        $priceValue = -1 * $adjustedDiscountAmount; // adjusted discount amount, add shipping costs AT
+        $priceValue = -1 * $adjustedDiscountAmount; // negated discount amount
 
         $definition = new AbsolutePriceDefinition(
             $priceValue,
@@ -123,7 +101,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         $discountLineItem->setPrice($calculatedPrice);
 
         // Ensure the discount line item is unique and does not interfere with other items
-        $discountLineItem->setId(uniqid(uniqid($customerDiscountName.'_'), true));
+        $discountLineItem->setId(uniqid(uniqid($customerDiscountName . '_'), true));
 
         // add discount to cart
         $toCalculate->add($discountLineItem);
@@ -133,7 +111,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         CartDataCollection $data,
         Cart $original,
         SalesChannelContext $context,
-        CartBehavior $behavior,
+        CartBehavior $behavior
     ): void {
         // collection of deliveries
         $this->deliveryProcessor->collect($data, $original, $context, $behavior);
@@ -145,16 +123,16 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
     private function findProducts(Cart $cart): LineItemCollection
     {
         return $cart->getLineItems()->filter(function (LineItem $item) {
-            return LineItem::PRODUCT_LINE_ITEM_TYPE === $item->getType();
+            return $item->getType() === LineItem::PRODUCT_LINE_ITEM_TYPE;
         });
     }
 
     private function createDiscount(string $name, $expirationDate): LineItem
     {
-        $discountLineItem = new LineItem(uniqid($name.'_'), 'special_discount', null, 1);
+        $discountLineItem = new LineItem(uniqid($name . '_'), AlengoCustomerDiscount::LINE_ITEM_TYPE, null, 1);
 
         $discountLineItem->setLabel($name);
-        $discountLineItem->setDescription('Rabatt gültig bis '.$expirationDate->format('d.m.Y'));
+        $discountLineItem->setDescription('Rabatt gültig bis ' . $expirationDate->format('d.m.Y'));
         $discountLineItem->setGood(false);       // kein kaufbares Gut
         $discountLineItem->setStackable(false);  // nicht mehrfach anwendbar
         $discountLineItem->setRemovable(false);  // nicht im Frontend löschbar
@@ -162,3 +140,4 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         return $discountLineItem;
     }
 }
+
