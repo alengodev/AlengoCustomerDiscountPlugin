@@ -6,6 +6,13 @@ Das Format folgt [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [0.2.5] - 2026-03-18
+
+### Behoben
+- `CustomFieldsInstaller`-Service in `services.xml` als `public="true"` markiert — der Symfony-Container entfernt/inlined private Services beim Kompilieren, weshalb der direkte Zugriff via `$this->container->get()` in den Plugin-Lifecycle-Hooks (`install`, `activate`, `uninstall`) mit einer `ServiceNotFoundException` fehlschlug
+
+---
+
 ## [0.2.4] - 2026-03-18
 
 ### Entfernt
