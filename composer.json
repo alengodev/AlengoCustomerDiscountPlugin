@@ -2,7 +2,7 @@
     "name": "alengo/customer-discount",
     "description": "Plugin to set customer specific discounts",
     "type": "shopware-platform-plugin",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "license": "MIT",
     "authors": [
         {

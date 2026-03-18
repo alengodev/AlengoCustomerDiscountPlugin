@@ -6,6 +6,13 @@ Das Format folgt [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [0.2.4] - 2026-03-18
+
+### Entfernt
+- Leere `config.xml` aus `src/Resources/config/` entfernt — die Datei enthielt keine Plugin-Konfiguration und war ungenutzt
+
+---
+
 ## [0.2.3] - 2026-03-16
 
 ### Behoben
