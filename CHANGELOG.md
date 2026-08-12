@@ -6,6 +6,13 @@ Das Format folgt [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [v6.6.1] - 2026-08-12
+
+### Behoben
+- `CustomerDiscountProcessor` warf beim Hinzufügen eines Produkts zum Warenkorb `Line item is invalid: Identifier contains invalid characters`, sobald der Rabattname (`alengoCustomerDiscount_name`) ein Leerzeichen oder Sonderzeichen enthielt (z. B. das README-Beispiel "Treuebonus 2024"). Ursache: Die Rabatt-LineItem-ID wurde direkt aus dem frei eingegebenen Namen gebaut (`uniqid($name . '_')`), Shopware erlaubt in LineItem-IDs aber nur `a-zA-Z0-9-_.`. Die ID wird jetzt mit `Uuid::randomHex()` erzeugt; der Rabattname bleibt unverändert im Label sichtbar. Ein zweiter, redundanter und ebenso fehlerhafter `setId()`-Aufruf wurde entfernt.
+
+---
+
 ## [v6.6.0] - 2026-08-12
 
 ### Behoben

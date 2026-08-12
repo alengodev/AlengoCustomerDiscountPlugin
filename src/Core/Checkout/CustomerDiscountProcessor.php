@@ -14,6 +14,7 @@ use Shopware\Core\Checkout\Cart\Price\AbsolutePriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition;
 use Shopware\Core\Checkout\Cart\Price\Struct\PriceCollection;
 use AlengoCustomerDiscount\AlengoCustomerDiscount;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProcessorInterface
@@ -100,9 +101,6 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
         $discountLineItem->setPriceDefinition($definition);
         $discountLineItem->setPrice($calculatedPrice);
 
-        // Ensure the discount line item is unique and does not interfere with other items
-        $discountLineItem->setId(uniqid(uniqid($customerDiscountName . '_'), true));
-
         // add discount to cart
         $toCalculate->add($discountLineItem);
     }
@@ -129,7 +127,7 @@ class CustomerDiscountProcessor implements CartDataCollectorInterface, CartProce
 
     private function createDiscount(string $name, $expirationDate): LineItem
     {
-        $discountLineItem = new LineItem(uniqid($name . '_'), AlengoCustomerDiscount::LINE_ITEM_TYPE, null, 1);
+        $discountLineItem = new LineItem(Uuid::randomHex(), AlengoCustomerDiscount::LINE_ITEM_TYPE, null, 1);
 
         $discountLineItem->setLabel($name);
         $discountLineItem->setDescription('Rabatt gültig bis ' . $expirationDate->format('d.m.Y'));
