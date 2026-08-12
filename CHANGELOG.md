@@ -6,6 +6,22 @@ Das Format folgt [Keep a Changelog](https://keepachangelog.com/de/1.0.0/).
 
 ---
 
+## [v6.6.0] - 2026-08-12
+
+### Behoben
+- `AlengoCustomerDiscount::install()` und `::uninstall()` scheiterten bei einer echten Erstinstallation bzw. beim Deinstallieren mit `ServiceNotFoundException`: Der Plugin-Container lädt die eigene `services.xml` nur, wenn das Plugin bereits aktiv ist — während `install()` (vor der Aktivierung) und `uninstall()` (nach dem automatischen Deaktivieren) ist das nie der Fall. `CustomFieldsInstaller` wird jetzt in `getCustomFieldsInstaller()` direkt mit den Core-Repositories (`custom_field_set.repository` u.a.) instanziiert statt über den Plugin-Container aufgelöst. Die vorherige `public="true"`-Korrektur in v0.2.5 hatte nur den Aktivierungspfad abgedeckt, nicht die Erstinstallation.
+- `CustomFieldsInstaller`-Service-Definition aus `services.xml` entfernt, da die Klasse nirgends mehr via DI referenziert wird
+
+### Geändert
+- Branch- und Versionierungsstrategie umgestellt: Dieser Branch (`sw-6.6`) verfolgt Shopware 6.6, Releases werden als `v6.6.x` getaggt. Zukünftige Shopware-Hauptversionen erhalten eigene Branches (`sw-6.7`, ...) mit entsprechendem Versionspräfix
+- `composer.json`: `shopware/core` und `shopware/storefront` auf `^6.6.0` präzisiert (vorher `^6.5.8`)
+- Automatisierter GitHub-Actions-Release-Workflow ergänzt (Tag + Plugin-ZIP bei Push auf `sw-6.6`)
+
+### Verifiziert
+- Vollständiger Lifecycle (`plugin:install --activate`, `plugin:uninstall`) gegen Shopware 6.6.10.21 getestet — keine Deprecations, keine Signatur-Abweichungen bei den verwendeten Core-APIs (`CartProcessorInterface`, `CartDataCollectorInterface`, `AbsolutePriceCalculator`, `DeliveryProcessor`)
+
+---
+
 ## [0.2.5] - 2026-03-18
 
 ### Behoben

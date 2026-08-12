@@ -13,11 +13,10 @@
             <tag name="shopware.cart.processor" priority="100"/>
         </service>
 
-        <service id="AlengoCustomerDiscount\Service\CustomFieldsInstaller" public="true">
-            <argument type="service" id="custom_field_set.repository"/>
-            <argument type="service" id="custom_field_set_relation.repository"/>
-            <argument type="service" id="custom_field.repository"/>
-        </service>
+        <!-- CustomFieldsInstaller is intentionally not a container service: the plugin
+             lifecycle hooks that use it (install/activate/uninstall) can run before this
+             plugin's own services.xml is compiled into the container, so it is built
+             directly in AlengoCustomerDiscount::getCustomFieldsInstaller() instead. -->
 
         <service id="AlengoCustomerDiscount\Subscriber\OrderDiscountSubscriber"
                  autowire="true" autoconfigure="true">

@@ -1,0 +1,71 @@
+name: Release (Shopware 6.6)
+
+# Legt bei jedem Push auf sw-6.6 automatisch Tag + GitHub-Release an,
+# sobald die Version in composer.json noch keinen Tag hat.
+# Das Release enthaelt eine im Shop installierbare Plugin-ZIP.
+#
+# Dieser Workflow ist bewusst an den sw-6.6-Branch gebunden: Jede Shopware-
+# Hauptversion wird in einem eigenen Branch (sw-6.6, sw-6.7, ...) gepflegt,
+# mit einem eigenen, gleichnamig praefigierten Versions-/Tag-Schema (v6.6.x,
+# v6.7.x, ...). Fuer eine neue Shopware-Version diesen Workflow in den neuen
+# Branch kopieren und den Branch-Filter unten anpassen.
+on:
+  push:
+    branches: [sw-6.6]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      PLUGIN_NAME: AlengoCustomerDiscount
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version aus composer.json lesen
+        id: version
+        run: echo "version=$(jq -r '.version' composer.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Pruefen, ob Tag schon existiert
+        id: tagcheck
+        run: |
+          if git rev-parse "refs/tags/${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.version }} existiert bereits - Release wird uebersprungen."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Plugin-ZIP bauen
+        if: steps.tagcheck.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p "build/${PLUGIN_NAME}"
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='build' \
+            --exclude='.gitignore' \
+            --exclude='.DS_Store' \
+            --exclude='*.zip' \
+            ./ "build/${PLUGIN_NAME}/"
+          (cd build && zip -r "../${PLUGIN_NAME}-${VERSION}.zip" "${PLUGIN_NAME}")
+
+      - name: Tag + Release erstellen
+        if: steps.tagcheck.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --generate-notes \
+            --target sw-6.6 \
+            "${PLUGIN_NAME}-${VERSION}.zip"

@@ -62,7 +62,16 @@ class AlengoCustomerDiscount extends Plugin
 
     private function getCustomFieldsInstaller(): CustomFieldsInstaller
     {
-        return $this->container->get(CustomFieldsInstaller::class);
+        // Lifecycle hooks (install/activate/uninstall) can run before this plugin's own
+        // services.xml is loaded into the container (e.g. on a fresh install, the plugin
+        // is not yet active, so its own service definitions aren't compiled in). The core
+        // custom-field repositories are always available, so build the installer directly
+        // instead of resolving it as a service of this plugin.
+        return new CustomFieldsInstaller(
+            $this->container->get('custom_field_set.repository'),
+            $this->container->get('custom_field_set_relation.repository'),
+            $this->container->get('custom_field.repository')
+        );
     }
 }
 

@@ -4,8 +4,10 @@ Ermöglicht die Vergabe von kundenspezifischen Guthaben-Rabatten, die beim Check
 
 ## Voraussetzungen
 
-- Shopware 6.5.8+
+- Shopware 6.6.x
 - PHP 8.3+
+
+> Dieses Plugin wird pro Shopware-Hauptversion in einem eigenen Branch gepflegt (`sw-6.6` für Shopware 6.6, künftig z. B. `sw-6.7` für Shopware 6.7). Releases werden entsprechend mit dem Präfix der jeweiligen Shopware-Version getaggt (`v6.6.x`, `v6.7.x`, ...). Für andere Shopware-Versionen den passenden Branch verwenden.
 
 ## Installation
 
